@@ -8,21 +8,14 @@ import {
   Revenue,
 } from './definitions';
 import { formatCurrency } from './utils';
+import { unstable_noStore as nostore } from "next/cache";
 
 const sql = postgres(process.env.POSTGRES_URL!, { ssl: 'require' });
 
 export async function fetchRevenue() {
+  nostore();
   try {
-    // Artificially delay a response for demo purposes.
-    // Don't do this in production :)
-
-    // console.log('Fetching revenue data...');
-    // await new Promise((resolve) => setTimeout(resolve, 3000));
-
     const data = await sql<Revenue[]>`SELECT * FROM revenue`;
-
-    // console.log('Data fetch completed after 3 seconds.');
-
     return data;
   } catch (error) {
     console.error('Database Error:', error);
@@ -31,18 +24,20 @@ export async function fetchRevenue() {
 }
 
 export async function fetchLatestInvoices() {
+  nostore();
   try {
     const data = await sql<LatestInvoiceRaw[]>`
       SELECT invoices.amount, customers.name, customers.image_url, customers.email, invoices.id
       FROM invoices
       JOIN customers ON invoices.customer_id = customers.id
-      ORDER BY invoices.date DESC
-      LIMIT 5`;
+      ORDER BY invoices.date DESC LIMIT 5
+    `;
 
     const latestInvoices = data.map((invoice) => ({
       ...invoice,
       amount: formatCurrency(invoice.amount),
     }));
+
     return latestInvoices;
   } catch (error) {
     console.error('Database Error:', error);
@@ -51,6 +46,7 @@ export async function fetchLatestInvoices() {
 }
 
 export async function fetchCardData() {
+  nostore();
   try {
     // You can probably combine these into a single SQL query
     // However, we are intentionally splitting them to demonstrate
@@ -122,6 +118,7 @@ export async function fetchFilteredInvoices(
 }
 
 export async function fetchInvoicesPages(query: string) {
+  nostore();
   try {
     const data = await sql`SELECT COUNT(*)
     FROM invoices
@@ -143,6 +140,7 @@ export async function fetchInvoicesPages(query: string) {
 }
 
 export async function fetchInvoiceById(id: string) {
+  nostore();
   try {
     const data = await sql<InvoiceForm[]>`
       SELECT
@@ -168,6 +166,7 @@ export async function fetchInvoiceById(id: string) {
 }
 
 export async function fetchCustomers() {
+  nostore();
   try {
     const customers = await sql<CustomerField[]>`
       SELECT
@@ -185,6 +184,7 @@ export async function fetchCustomers() {
 }
 
 export async function fetchFilteredCustomers(query: string) {
+  nostore();
   try {
     const data = await sql<CustomersTableType[]>`
 		SELECT
