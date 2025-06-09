@@ -25,7 +25,7 @@ export async function createInvoices(formData: FormData) {
     status: formData.get('status'),
   });
 
-  const amountInCents = amount * 100;
+  const amountInCents = Math.round(amount * 100);
   const date = new Date().toISOString().split('T')[0];
 
   await sql`
@@ -44,7 +44,7 @@ export async function updateInvoice(id: string, formData: FormData) {
     status: formData.get('status'),
   });
 
-  const amountInCents = amount * 100;
+  const amountInCents = Math.round(amount * 100);
 
   await sql`
       UPDATE invoices
@@ -59,8 +59,10 @@ export async function updateInvoice(id: string, formData: FormData) {
 }
 
 export async function deleteInvoice(id: string) {
-  await sql`Delete
-            from invoices
-            where id = ${id}`;
+  await sql`
+      Delete
+      from invoices
+      where id = ${id}
+  `;
   revalidatePath('/dashboard/invoices');
 }
